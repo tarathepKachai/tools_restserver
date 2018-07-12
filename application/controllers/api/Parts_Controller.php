@@ -38,10 +38,23 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
     
     
     public function get_all_department_get() {
-        
-        $result = $this->Parts_Model->get_all_department();
-        
+        header('Content-Type: application/json');
+        $result = $this->Parts_Model->Get_all_department();
         $this->response($result,200);
+        
+    }
+    
+    public function get_device_by_id_post(){
+        
+        
+        $dept_code = $this->post("dept_code");
+        $result = $this->Parts_Model->Get_device_by_id($dept_code);
+        
+        if($result['status']==true){
+            $this->response($result,200);
+        }else{
+            $this->response($result,404);
+        }
         
     }
 
