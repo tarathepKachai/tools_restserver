@@ -64,4 +64,9 @@ $route['api/example/users/(:num)(\.)([a-zA-Z0-9_-]+)(.*)'] = 'api/example/users/
 $route['parts/test'] = 'api/Parts_Controller/test';
 $route['parts/dept'] = 'api/Parts_Controller/get_all_department';
 $route['parts/device_by_id'] = 'api/Parts_Controller/get_device_by_id';
+<<<<<<< HEAD
+$route['parts/paytran_list'] = 'api/Parts_Controller/paytran_list';
+$route['parts/paydetail_by_id'] = 'api/Parts_Controller/paydetail_by_id';
+=======
+>>>>>>> a3f92fc47d1d31743a1606e82e9f81be44e0b4b0
 

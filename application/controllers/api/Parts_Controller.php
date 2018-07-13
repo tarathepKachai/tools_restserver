@@ -41,10 +41,44 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
         header('Content-Type: application/json');
         $result = $this->Parts_Model->Get_all_department();
         $this->response($result,200);
+<<<<<<< HEAD
         
     }
     
     public function get_device_by_id_post(){
+        
+        
+        $dept_code = $this->post("dept_code");
+        $result = $this->Parts_Model->Get_device_by_id($dept_code);
+        
+        if($result['status']==true){
+            $this->response($result,200);
+        }else{
+            $this->response($result,404);
+        }
+        
+    }
+    
+    public function paytran_list_get(){
+        
+        $result = $this->Parts_Model->Get_paytran_list();
+        
+        $this->response($result,200);
+        
+        
+    }
+    
+    public function paydetail_by_id_post(){
+        
+        $id = $this->post("BILLNO");
+        
+        $result = $this->Parts_Model->Get_paydetail_by_id($id);
+=======
+        
+    }
+    
+    public function get_device_by_id_post(){
+>>>>>>> a3f92fc47d1d31743a1606e82e9f81be44e0b4b0
         
         
         $dept_code = $this->post("dept_code");
