@@ -68,4 +68,6 @@ $route['parts/device_by_id'] = 'api/Parts_Controller/get_device_by_id';
 $route['parts/paytran_list'] = 'api/Parts_Controller/paytran_list';
 $route['parts/paydetail_by_id'] = 'api/Parts_Controller/paydetail_by_id';
 
+$route['parts/Insert_rcvtran_by_id'] = 'api/Parts_Controller/Insert_rcvtran_by_id';
+
 

@@ -74,10 +74,23 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
         
         $result = $this->Parts_Model->Get_paydetail_by_id($id);
 
-        
+        $this->response($result,200);
     }
     
+    public function Insert_rcvtran_by_id_post(){
+        
+        $id = $this->input->post("BILLNO");
+        
+        
+        
+        
+        $result = $this->Parts_Model->Insert_rcvtran_by_id($id);
+        
+        $this->response($result,200);
+        
+    }
 
+    
 
     public function users_get() {
         // Users from a data store e.g. database
