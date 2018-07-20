@@ -82,47 +82,108 @@ class Parts_Model extends CI_Model {
         return $array;
     }
 
-    public function Insert_rcvtran_by_id($id) {
+    public function Insert_rcvtran_by_id($BILLNO) {
         $db_217 = $this->load->database('db_217', TRUE);
 
+        $where = array(
+            "RCV_BILLNO" => $BILLNO
+        );
 
-        foreach ($id as $PAY => $key) {
-            $where = array(
-                "RCV_BILLNO" => $PAY['BILLNO']
+        $this->db->where($where);
+        $query = $this->db->get("rcvtran");
+        if ($query->num_rows() > 0) {
+            $result = array(
+                "status" => false
             );
+        } else {
 
-            $this->db->where($where);
-            $query = $this->db->get("rcvtran");
-            if ($query->num_rows() > 0) {
-                $result = array(
-                    "status" => false
-                );
-            } else {
-
-                $data = $this->Get_paytran_by_id($PAY['BILLNO']);
+            $data = $this->Get_paytran_by_id($BILLNO);
 //            $this->db->set($data);
 //            $this->db->insert("rcvtran");
 
-                $detail = $this->Get_paydetail_by_id($PAY['BILLNO']);
-                if ($detail['status'] == true) {
-                    $detail_data = $detail['data'];
+            $detail = $this->Get_paydetail_by_id($BILLNO);
+            if ($detail['status'] == true) {
+                $detail_data = $detail['data'];
 //                $this->db->set($detail_data);
 //                $this->db->insert("rcvdetail");
-                }
-
-                $result = array(
-                    "status" => true
-                );
-                $result = array(
-                    "tran" => $data,
-                    "detail" => $detail_data
-                );
             }
+
+            $result = array(
+                "status" => true
+            );
+            $result = array(
+                "tran" => $data,
+                "detail" => $detail_data
+            );
         }
 
 
+        return $result;
+    }
+
+    public function rcvtran_list() {
+
+        $query = $this->db->get('rcvtran');
+
+        if ($query->num_rows() > 0) {
+            $data = $query->result_array();
+            $result = array(
+                "status" => true,
+                "data" => $data
+            );
+        } else {
+            $result = array(
+                "status" => false
+            );
+        }
 
         return $result;
+    }
+
+    public function rcvdetail_by_id($BILLNO) {
+
+        $where = array(
+            "RCVD_BILLNO" => $BILLNO
+        );
+
+        $this->db->where($where);
+        $query = $this->db->get("rcvdetail");
+
+        if ($query->num_rows() > 0) {
+            $data = $query->result_array();
+            $result = array(
+                "status" => true,
+                "data" => $data
+            );
+        } else {
+            $result = array(
+                "status" => false
+            );
+        }
+    }
+    
+    public function rcvtran_by_id($BILLNO){
+        
+        $where = array(
+            "RCVD_BILLNO" => $BILLNO
+        );
+        
+        $this->db->where($where);
+        $query = $this->db->get("rcvtran");
+        
+        if($query->num_rows()>0){
+            $result = array(
+              "status" => true,
+                "data" => $query->result_array()
+            );
+        }else{
+            $result = array(
+                "status" => false
+            );
+        }
+        
+        return $result;
+        
     }
 
 }

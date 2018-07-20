@@ -35,62 +35,71 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
         $this->response($id, 200);
     }
 
-    
-    
     public function get_all_department_get() {
         header('Content-Type: application/json');
         $result = $this->Parts_Model->Get_all_department();
-        $this->response($result,200);
-
-        
+        $this->response($result, 200);
     }
-    
-    public function get_device_by_id_post(){
-        
-        
+
+    public function get_device_by_id_post() {
+        header('Content-Type: application/json');
         $dept_code = $this->post("dept_code");
         $result = $this->Parts_Model->Get_device_by_id($dept_code);
-        
-        if($result['status']==true){
-            $this->response($result,200);
-        }else{
-            $this->response($result,404);
+
+        if ($result['status'] == true) {
+            $this->response($result, 200);
+        } else {
+            $this->response($result, 404);
         }
-        
     }
-    
-    public function paytran_list_get(){
-        
+
+    public function paytran_list_get() {
+        header('Content-Type: application/json');
         $result = $this->Parts_Model->Get_paytran_list();
-        
-        $this->response($result,200);
-        
-        
+
+        $this->response($result, 200);
     }
-    
-    public function paydetail_by_id_post(){
-        
+
+    public function paydetail_by_id_post() {
+        header('Content-Type: application/json');
         $id = $this->post("BILLNO");
-        
+
         $result = $this->Parts_Model->Get_paydetail_by_id($id);
 
-        $this->response($result,200);
-    }
-    
-    public function Insert_rcvtran_by_id_post(){
-        
-        $id = $this->input->post("BILLNO");
-        
-        
-        
-        
-        $result = $this->Parts_Model->Insert_rcvtran_by_id($id);
-        
-        $this->response($result,200);
-        
+        $this->response($result, 200);
     }
 
+    public function insert_rcvtran_by_id_post() {
+        header('Content-Type: application/json');
+        $id = $this->post("BILLNO");
+        //$result = $this->Parts_Model->Insert_rcvtran_by_id($id);
+
+        $this->response($result, 200);
+    }
+
+    public function rcvtran_list_get() {
+        header('Content-Type: application/json');
+        $result = $this->Parts_Model->rcvtran_list();
+
+        $this->response($result, 200);
+    }
     
+    public function rcvtran_by_id_post() {
+        header('Content-Type: application/json');
+        $id = $this->post("BILLNO");
+        $result = $this->Parts_Model->rcvtran_by_id($id);
+
+        $this->response($result, 200);
+    }
+
+    public function rcvdetail_by_id_post() {
+
+        $BILLNO = $this->post("BILLMNO");
+
+        $result = $this->Parts_Model->rcvdetail_by_id($BILLNO);
+        
+        $this->response($result, 200);
+    }
 
     public function users_get() {
         // Users from a data store e.g. database
