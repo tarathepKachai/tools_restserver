@@ -49,13 +49,23 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
         if ($result['status'] == true) {
             $this->response($result, 200);
         } else {
-            $this->response($result, 404);
+            $this->response($result, 200);
         }
     }
 
     public function paytran_list_get() {
         header('Content-Type: application/json');
         $result = $this->Parts_Model->Get_paytran_list();
+
+        $this->response($result, 200);
+    }
+    
+    public function paytran_by_id_get() {
+        header('Content-Type: application/json');
+        
+        $BILLNO = $this->post("BILLNO");
+        
+        $result = $this->Parts_Model->Get_paytran_by_id($BILLNO);
 
         $this->response($result, 200);
     }
@@ -70,9 +80,12 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
     }
 
     public function insert_rcvtran_by_id_post() {
-        header('Content-Type: application/json');
+       // header('Content-Type: application/json');
         $id = $this->post("BILLNO");
-        //$result = $this->Parts_Model->Insert_rcvtran_by_id($id);
+        
+        
+        
+        $result = $this->Parts_Model->Insert_rcvtran_by_id($id);
 
         $this->response($result, 200);
     }
