@@ -168,6 +168,7 @@ class Parts_Model extends CI_Model {
     public function Insert_rcvtran_by_id($BILLNO) {
         $db_217 = $this->load->database('db_217', TRUE);
 
+        $data_rcv = array();
         foreach ($BILLNO as $BILL) {
 
             if ($this->Rcv_check($BILL)) {
@@ -193,80 +194,71 @@ class Parts_Model extends CI_Model {
 
                 foreach ($query1->result_array() as $paytran) {
 
-                    $data_rcv = array(
+                    $today = date("Y-m-d");
+                    $now = date("h:i:sa");
+                    $vat_arr = $this->vat_cal($paytran['AMOUNT']);
+                    $data_rcv[] = array(
                         "RCV_BILLNO" => $paytran['BILLNO'],
                         "RCV_BILLDATE" => $paytran['TRNDATE'],
-                        "RCV_SupCode" => "ff",
-                        "RCV_NO" => "ff",
-                        "RCV_DATE" => "ff",
-                        "RCV_REF_NO" => "ff",
-                        "RCV_SEC" => "ff",
+                        "RCV_SupCode" => $this->tis2utf8($paytran['CODE_DP']),
+                        //"RCV_NO" => "",
+                        "RCV_DATE" => "$today",
+                        //"RCV_REF_NO" => "",
+                        //"RCV_SEC" => "",
                         "RCV_CODE_ST" => $this->tis2utf8($paytran['CODE_ST']),
-                        "RCV_TYPE" => "ff",
+                        "RCV_TYPE" => $this->tis2utf8($this->tis2utf8($paytran['TYPEMT'])),
                         "RCV_AMOUNT" => $this->tis2utf8($paytran['AMOUNT']),
-                        "RCV_AMOUNTVAT" => "ff",
-                        "RCV_DISCOUNT" => "ff",
-                        "RCV_DISCAMT" => "ff",
-                        "RCV_VAT" => "ff",
-                        "RCV_VAT_AMT" => "ff",
+                        "RCV_AMOUNTVAT" => $vat_arr['AMOUNTVAT'],
+                        //"RCV_DISCOUNT" => "",
+                        //"RCV_DISCAMT" => "",
+                        "RCV_VAT" => $vat_arr['VAT'],
+                        "RCV_VAT_AMT" => $vat_arr['VAT_AMT'],
                         "RCV_REMARK" => $this->tis2utf8($paytran['REMARK']),
-                        "RCV_PERIOD" => $this->tis2utf8($paytran('PERIOD')),
-                        "RCV_STATUS" => "ff",
-                        "RCV_ID" => "ff",
-                        "RCV_TOTNET" => "ff",
-                        "User_Create" => "ff",
-                        "Time_Create" => "ff",
-                        "Date_Create" => "ff",
-                        "Comp_Create" => "ff",
-                        "User_Update" => "ff",
-                        "Time_Update" => "ff",
-                        "Date_Update" => "ff",
-                        "Comp_Update" => "ff",
-                        "User_Cancel" => "ff",
-                        "Time_Cancel" => "ff",
-                        "Date_Cancel" => "ff",
-                        "Comp_Cancel" => "ff"
+                        "RCV_PERIOD" => $this->tis2utf8($paytran['PERIOD']),
+                        "RCV_STATUS" => "",
+                        // "RCV_ID" => "ff",
+                        //"RCV_TOTNET" => "",
+                        //"User_Create" => "",
+                        "Time_Create" => "$now",
+                        "Date_Create" => "$today",
+//                        "Comp_Create" => "",
+//                        "User_Update" => "",
+//                        "Time_Update" => "",
+//                        "Date_Update" => "",
+//                        "Comp_Update" => "",
+//                        "User_Cancel" => "",
+//                        "Time_Cancel" => "",
+//                        "Date_Cancel" => "",
+//                        "Comp_Cancel" => ""
                     );
                 }
+//                $this->db->set($data_ins);
+//
+//                $a =$this->db->get_compiled_insert("rcvtran");
+////                $a =$this->db->insert_batch("rcvtran");
+//                $array = array(
+//                    "status" => TRUE
+//                );
+//                return $data_ins;
             } else {
-                
+                $array = array(
+                    "status" => FALSE
+                );
+                return $array;
             }
         }
 
-//        $where = array(
-//            "RCV_BILLNO" => $BILLNO
-//        );
-//
-//        $this->db->where($where);
-//        $query = $this->db->get("rcvtran");
-//        if ($query->num_rows() > 0) {
-//            $result = array(
-//                "status" => false
-//            );
-//        } else {
-//
-//            $data = $this->Get_paytran_by_id($BILLNO);
-////            $this->db->set($data);
-////            $this->db->insert("rcvtran");
-//
-//            $detail = $this->Get_paydetail_by_id($BILLNO);
-//            if ($detail['status'] == true) {
-//                $detail_data = $detail['data'];
-////                $this->db->set($detail_data);
-////                $this->db->insert("rcvdetail");
-//            }
-//
-//            $result = array(
-//                "status" => true
-//            );
-//            $result = array(
-//                "tran" => $data,
-//                "detail" => $detail_data
-//            );
-//        }
 
 
-        return $result;
+       // $this->db->set($data_rcv);
+
+       // $a = $this->db->get_compiled_insert("rcvtran");
+        $a = $this->db->insert_batch("rcvtran",$data_rcv);
+        $array = array(
+            "status" => TRUE
+        );
+        return $a;
+        //return $result;
     }
 
     public function rcvtran_list() {
@@ -375,14 +367,29 @@ class Parts_Model extends CI_Model {
         $where = array(
             "RCV_BILLNO" => $BILLNO
         );
-        $db_217->where($where);
-        $query = $db_217->get("rcvtran");
+        $this->db->where($where);
+        $query = $this->db->get("rcvtran");
 
         if ($query->num_rows() > 0) {
             return 0;
         } else {
             return 1;
         }
+    }
+
+    public function vat_cal($amount) {
+
+        $vat = "7";
+        $vat_amt = ($amount * ($vat / 100));
+        $amount_vat = $vat_amt + $amount;
+
+
+        $array = array(
+            "AMOUNTVAT" => $amount_vat,
+            "VAT" => $vat,
+            "VAT_AMT" => $vat_amt
+        );
+        return $array;
     }
 
 }
