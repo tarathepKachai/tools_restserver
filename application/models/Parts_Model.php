@@ -44,30 +44,37 @@ class Parts_Model extends CI_Model {
 
         $db_217->where("CODE_DP", "101-1100-0");
         $query = $db_217->get('paytran');
-
+        $sql = $db_217->last_query();
 
         $result = array();
         $valuex = array();
         if ($query->num_rows() > 0) {
             $data = $query->result_array();
             foreach ($data as $key => $value) {
-                $this->db->where("RCV_BILLNO", $data[$key]['BILLNO']);
+                $where_rcv = array(
+                    "RCV_BILLNO" => $data[$key]['BILLNO'],
+                    "Date_Cancel" => NULL
+                );
+                $this->db->where($where_rcv);
                 $query2 = $this->db->get("rcvtran");
+                //$sql2 = $this->db->last_query();
                 if ($query2->num_rows() > 0) {
                     // do nothing
                 } else {
-
                     foreach ($value as $keysub => $val) {
-
                         $valuex[$keysub] = $this->tis2utf8($val);
+                        //print_r($this->tis2utf8($val));
                     }
                 }
 
                 $result[] = $valuex;
             }
+
+            $count = count($result);
             $array = array(
                 "status" => TRUE,
-                "data" => $result
+                "data" => $result,
+                "count" => $count
             );
         } else {
             $array = array(
@@ -165,7 +172,7 @@ class Parts_Model extends CI_Model {
         }
     }
 
-    public function Insert_rcvtran_by_id($BILLNO) {
+    public function Insert_rcvtran($BILLNO) {
         $db_217 = $this->load->database('db_217', TRUE);
 
         $data_rcv = array();
@@ -177,7 +184,8 @@ class Parts_Model extends CI_Model {
             } else {
                 // data's dup
                 $array = array(
-                    "status" => "duplicate"
+                    "status" => "duplicate",
+                    "BILLNO" => $BILL
                 );
                 return $array;
             }
@@ -197,11 +205,12 @@ class Parts_Model extends CI_Model {
                     $today = date("Y-m-d");
                     $now = date("h:i:sa");
                     $vat_arr = $this->vat_cal($paytran['AMOUNT']);
-                    $data_rcv[] = array(
+                    $RCV_NO = $this->get_rcv_no();
+                    $data_rcv = array(
                         "RCV_BILLNO" => $paytran['BILLNO'],
                         "RCV_BILLDATE" => $paytran['TRNDATE'],
                         "RCV_SupCode" => $this->tis2utf8($paytran['CODE_DP']),
-                        //"RCV_NO" => "",
+                        "RCV_NO" => $RCV_NO,
                         "RCV_DATE" => "$today",
                         //"RCV_REF_NO" => "",
                         //"RCV_SEC" => "",
@@ -231,15 +240,20 @@ class Parts_Model extends CI_Model {
 //                        "Date_Cancel" => "",
 //                        "Comp_Cancel" => ""
                     );
+
+                    $tran_rec = array(
+                        "Status" => "1"
+                    );
+
+                    $data_tran = array_merge($data_rcv, $tran_rec);
                 }
-//                $this->db->set($data_ins);
-//
-//                $a =$this->db->get_compiled_insert("rcvtran");
-////                $a =$this->db->insert_batch("rcvtran");
-//                $array = array(
-//                    "status" => TRUE
-//                );
-//                return $data_ins;
+                $this->db->set($data_rcv);
+                //$a = $this->db->get_compiled_insert("rcvtran");
+                $a = $this->db->insert("rcvtran");
+
+                $this->db->set($data_tran);
+                //$b = $this->db->get_compiled_insert("rcvtran_tran");
+                $b = $this->db->insert("rcvtran_tran");
             } else {
                 $array = array(
                     "status" => FALSE
@@ -250,19 +264,33 @@ class Parts_Model extends CI_Model {
 
 
 
-       // $this->db->set($data_rcv);
-
-       // $a = $this->db->get_compiled_insert("rcvtran");
-        $a = $this->db->insert_batch("rcvtran",$data_rcv);
+//         $this->db->set($data_rcv);
+//         $a = $this->db->get_compiled_insert("rcvtran");
+//        $a = $this->db->insert_batch("rcvtran", $data_rcv);
+        //$sql = $this->db->last_query();
         $array = array(
             "status" => TRUE
         );
-        return $a;
+        return $array;
         //return $result;
     }
 
-    public function rcvtran_list() {
+    public function Insert_rcvdetail($BILLNO) {
 
+        $db_217 = $this->load->database('db_217', TRUE);
+        $where = array(
+          "RCVD_BILLNO"  => $BILLNO
+        );
+        $db_217->where($where);
+        $query1 = $db_217->get('rcvdetail');
+        
+    }
+
+    public function rcvtran_list() {
+        $where = array(
+            "Date_Cancel" => NULL
+        );
+        $this->db->where($where);
         $query = $this->db->get('rcvtran');
 
         if ($query->num_rows() > 0) {
@@ -365,7 +393,8 @@ class Parts_Model extends CI_Model {
         $db_217 = $this->load->database('db_217', TRUE);
 
         $where = array(
-            "RCV_BILLNO" => $BILLNO
+            "RCV_BILLNO" => $BILLNO,
+            "Date_Cancel" => NULL
         );
         $this->db->where($where);
         $query = $this->db->get("rcvtran");
@@ -390,6 +419,24 @@ class Parts_Model extends CI_Model {
             "VAT_AMT" => $vat_amt
         );
         return $array;
+    }
+
+    public function get_rcv_no() {
+
+        $sql = "SELECT max(RCV_NO) as RCV_NO FROM rcvtran ; ";
+
+        $query = $this->db->query($sql);
+
+        if ($query->num_rows() > 0) {
+            foreach ($query->result_array() as $row) {
+                $temp = (int) $row['RCV_NO'];
+                $RCV_NO = $temp + 1;
+            }
+        } else {
+            $RCV_NO = "1";
+        }
+
+        return $RCV_NO;
     }
 
 }
