@@ -59,12 +59,12 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
 
         $this->response($result, 200);
     }
-    
+
     public function paytran_by_id_post() {
         header('Content-Type: application/json');
-        
+
         $BILLNO = $this->post("BILLNO");
-        
+
         $result = $this->Parts_Model->Get_paytran_by_id($BILLNO);
 
         $this->response($result, 200);
@@ -80,11 +80,9 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
     }
 
     public function insert_rcvtran_post() {
-       // header('Content-Type: application/json');
+        // header('Content-Type: application/json');
         $id = $this->post("BILLNO");
-        
-        
-        
+
         $result = $this->Parts_Model->Insert_rcvtran($id);
 
         $this->response($result, 200);
@@ -96,7 +94,7 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
 
         $this->response($result, 200);
     }
-    
+
     public function rcvtran_by_id_post() {
         header('Content-Type: application/json');
         $id = $this->post("BILLNO");
@@ -107,10 +105,10 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
 
     public function rcvdetail_by_id_post() {
 
-        $BILLNO = $this->post("BILLMNO");
+        $BILLNO = $this->input->post("BILLNO");
 
         $result = $this->Parts_Model->rcvdetail_by_id($BILLNO);
-        
+
         $this->response($result, 200);
     }
 
