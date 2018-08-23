@@ -69,6 +69,15 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
 
         $this->response($result, 200);
     }
+    
+        public function search_paytran_post() {
+        header('Content-Type: application/json');
+
+        $NO_REC = $this->post("NO_REC");
+
+        $result = $this->Parts_Model->search_paytran($NO_REC);
+        $this->response($result, 200);
+    }
 
     public function paydetail_by_id_post() {
         header('Content-Type: application/json');
@@ -80,10 +89,10 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
     }
 
     public function insert_rcvtran_post() {
-        // header('Content-Type: application/json');
+        header('Content-Type: application/json');
         $id = $this->post("BILLNO");
-
-        $result = $this->Parts_Model->Insert_rcvtran($id);
+        $detail_id = $this->post("DETAIL_ID");
+        $result = $this->Parts_Model->Insert_rcvtran($id, $detail_id);
 
         $this->response($result, 200);
     }
@@ -104,10 +113,19 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
     }
 
     public function rcvdetail_by_id_post() {
-
+        header('Content-Type: application/json');
         $BILLNO = $this->input->post("BILLNO");
 
         $result = $this->Parts_Model->rcvdetail_by_id($BILLNO);
+
+        $this->response($result, 200);
+    }
+
+    public function rcvtran_cancel_post() {
+        header('Content-Type: application/json');
+        $BILLNO = $this->input->post("BILLNO");
+
+        $result = $this->Parts_Model->rcvtran_cancel($BILLNO);
 
         $this->response($result, 200);
     }
@@ -201,5 +219,7 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
 
         $this->set_response($message, \Restserver\Libraries\REST_Controller::HTTP_NO_CONTENT); // NO_CONTENT (204) being the HTTP response code
     }
+    
+    
 
 }

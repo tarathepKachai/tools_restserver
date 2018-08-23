@@ -23,16 +23,16 @@ class User_Model extends CI_Model {
         );
         $this->db->select("emp_code, emp_user_name ,emp_title,emp_firstname,emp_lastname ,emp_grp, emp_tec,emp_dept_iD,dept_name_thai");
         $this->db->from("dev_user a");
-        $this->db->join("dev_department b","a.emp_dept_id=b.dept_code","left");
+        $this->db->join("dev_department b", "a.emp_dept_id=b.dept_code", "left");
         $this->db->where($where);
         $query = $this->db->get();
         $result = array();
-        if($query->num_rows()>0){
+        if ($query->num_rows() > 0) {
             $result = array(
                 "status" => true,
                 "data" => $query->result_array()
             );
-        }else{
+        } else {
             $result = array(
                 "status" => false
             );
@@ -87,6 +87,7 @@ class User_Model extends CI_Model {
          */
         return $result;
     }
+
 
     //=============== convert utf-8 to tis-620 ================= 
     public function utf8tis620($string) {

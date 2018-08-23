@@ -92,4 +92,34 @@ class User_Controller extends \Restserver\Libraries\REST_Controller {
         }
     }
 
+ 
+
+        public function check_rmms_session_post(){
+        
+        error_reporting(E_ALL);
+        ini_set('display_errors', 'On');
+        date_default_timezone_set('Asia/Bangkok');
+        header("Access-Control-Allow-Credentials: true");
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: GET, POST');
+        header("Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept, Authorization");
+        header('Content-Type: application/json; charset=utf-8');
+        /* Sample GET Data From Service */
+        $x = $this->post("x");
+        $service = curl_init();
+// $_url_service="http://127.0.0.1:8080/rmms/server/service.php?mode=";
+        $_url_service = "http://172.17.8.144/rmms/server/service.php?mode=";
+
+        /* ตรวจสอบการ Login ค่า x  */
+        $mode = "checker_key";
+        $_url = $_url_service . $mode . "&x=" . $x;
+        curl_setopt($service, CURLOPT_URL, $_url);
+        curl_setopt($service, CURLOPT_RETURNTRANSFER, 1);
+        $profile = curl_exec($service);
+        //print_r($profile . "\n");
+        $_d = json_decode($profile);
+        //print_r($_d);
+        echo json_encode($_d);
+    }
+
 }

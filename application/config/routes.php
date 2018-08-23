@@ -68,15 +68,15 @@ $route['parts/device_by_id'] = 'api/Parts_Controller/get_device_by_id';
 $route['parts/paytran_list'] = 'api/Parts_Controller/paytran_list';
 $route['parts/paydetail_by_id'] = 'api/Parts_Controller/paydetail_by_id';
 $route['parts/paytran_by_id'] = 'api/Parts_Controller/paytran_by_id';
-
+$route['parts/search_paytran'] = 'api/Parts_Controller/search_paytran';
 
 
 $route['user/auth'] = 'api/User_Controller/Login_check';
-
-
+$route['user/check_rmms_session'] = 'api/User_Controller/check_rmms_session';
 
 $route['parts/Insert_rcvtran'] = 'api/Parts_Controller/insert_rcvtran';
 
 $route['parts/rcvtran_list'] = 'api/Parts_Controller/rcvtran_list';
 $route['parts/rcvdetail_by_id'] = 'api/Parts_Controller/rcvdetail_by_id';
+$route['parts/rcvtran_cancel'] = 'api/Parts_Controller/rcvtran_cancel';
 
