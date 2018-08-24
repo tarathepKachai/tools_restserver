@@ -90,10 +90,14 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
 
     public function insert_rcvtran_post() {
         header('Content-Type: application/json');
-        $id = $this->post("BILLNO");
-        $detail_id = $this->post("DETAIL_ID");
-        $result = $this->Parts_Model->Insert_rcvtran($id, $detail_id);
-
+        $NO_REC = $this->post("NO_REC");
+        $BILLNO = $this->post("BILLNO");
+        $DETAIL = $this->post("DETAIL");
+        
+        $result = $this->Parts_Model->Insert_rcvtran($NO_REC, $BILLNO,$DETAIL);
+        
+//        $result = $BILLNO[0]."||".$DETAIL[0];
+        
         $this->response($result, 200);
     }
 

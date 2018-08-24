@@ -320,6 +320,7 @@ class Parts_Model extends CI_Model {
                         "Pay_PERIOD" => $value['PERIOD'],
                         "Pay_AMOUNT" => $value['AMOUNT'],
                         "Pay_Type" => "",
+                        "Pay_Status" => "01",
 //                        "Pay_ID" => "",
                         "User_Create" => "",
                         "Time_Create" => $time,
@@ -426,7 +427,7 @@ class Parts_Model extends CI_Model {
                     "status" => "dup pay"
                 );
                 $detail_return = array(
-                    "status" => "no data"
+                    "status" => false
                 );
             }
 
@@ -484,6 +485,7 @@ class Parts_Model extends CI_Model {
                         "PayD_RCVD_ID" => "",
                         "PayD_RCV_No" => "",
                         "PayD_RCVD_Qty" => "0",
+                        "PayD_Status" => "01",
                         "User_Create" => "",
                         "Time_Create" => $time_now,
                         "Date_Create" => $date_now,
@@ -550,10 +552,10 @@ class Parts_Model extends CI_Model {
         $result = array();
         $result_detail = array();
         $where = array(
-            "Pay_No" => $NO_REC
+            "p.Pay_No" => $NO_REC
         );
-        $this->db->select("*");
-        $this->db->from("paytran");
+        $this->db->select("p.*");
+        $this->db->from("paytran p");
         $this->db->where($where);
         $query = $this->db->get();
         if ($query->num_rows() > 0) {
@@ -566,7 +568,18 @@ class Parts_Model extends CI_Model {
                 }
             }
 
+            $this->db->select(""
+                    . "p.Pay_No, SUM(p.Pay_AMOUNT) as SUM_PRICE,p.Pay_Date as DATE,"
+                    . "td.fac_name as Dep_name,g.descript as GROUP_NAME"
+                    . "");
+            $this->db->from("paytran p");
+            $this->db->join("dev_tdepart td", "p.Pay_Dept_ID=td.fac_code", "left");
+            $this->db->join("grup g", "p.Pay_CODE_GP=g.code_gp", "left");
+            $this->db->where($where);
+            $query = $this->db->get();
+
             $result = array(
+                "status" => true,
                 "paytran" => $query->result_array(),
                 "paydetail" => $result_detail
             );
@@ -580,11 +593,16 @@ class Parts_Model extends CI_Model {
         $where = array(
             "p.PayD_No" => $BILLNO
         );
-        $this->db->select("p.*,m.*,g.*,pe.*");
+        //$this->db->select("p.*,m.*,g.*,pe.*");
+        $this->db->select("p.PayD_No as BILLNO,p.PayD_MT_CODE as MT_CODE,p.PayD_Qty as Amount,"
+                . "p.PayD_PRICE as PRICE,(p.PayD_PRICE*p.PayD_Qty) as SUM_PRICE,PayD_RCVD_Qty as  RCV_Qty,"
+                . "PayD_RCVD_ID as  RCVD_ID,PayD_RCV_No as RCV_No,"
+                . "m.mt_name as MT_NAME , m.mt_unit as MT_UNIT,"
+                . "");
         $this->db->from("paydetail p");
         $this->db->join("master m", "p.PayD_MT_CODE = m.mt_code", "left");
         $this->db->join("accperiod pe", "p.PayD_PERIOD = pe.PERIOD", "left");
-        $this->db->join("grup g", "m.mt_grp = g.code_gp", "left");
+
         $this->db->where($where);
         $query = $this->db->get();
 
@@ -772,15 +790,14 @@ class Parts_Model extends CI_Model {
 //        //return $result;
 //    }
 
-    public function Insert_rcvtran($BILLNO, $detail_id) {
+    public function Insert_rcvtran($NO_REC, $BILLNO,$DETAIL) {
         $db_217 = $this->load->database('db_217', TRUE);
-
+        
         $data_rcv = array();
         foreach ($BILLNO as $BILL) {
             $where = array(
                 "BILLNO" => $BILL
             );
-
 
             if ($this->Rcv_check($BILL)) {
                 // new record
