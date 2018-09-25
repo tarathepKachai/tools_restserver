@@ -35,6 +35,58 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
         $this->response($id, 200);
     }
 
+    public function test_line_post() {
+
+        $id = $this->post("id");
+        $method = $this->post("method");
+
+        $array = "นาย $id ทำการลา $method";
+
+        $this->response($array, 200);
+    }
+
+    public function line_notify_post() {
+        header("Content-Type:text/xml");
+        $Token = "3RwkmE9TryLRO0BpWjAthQo5FEzDevaP47NhYg4b0PJ";
+        
+        $postData = file_get_contents("php://input");
+        $xml = simplexml_load_string($postData);
+        $id = $this->input->post('actCode');
+        $user = $this->input->post('user');
+//        foreach ($id as $key => $value) {
+//            $data.= $this->input->post($key)."//";
+//        }
+        $user = $this->input->post('user');
+        $message = "แจ้งเตือน ทดสอบ $postData $xml";
+        $lineapi = $Token; // ใส่ token key ที่ได้มา
+        $mms = trim($message); // ข้อความที่ต้องการส่ง
+        date_default_timezone_set("Asia/Bangkok");
+        $chOne = curl_init();
+        curl_setopt($chOne, CURLOPT_URL, "https://notify-api.line.me/api/notify");
+        // SSL USE 
+        curl_setopt($chOne, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($chOne, CURLOPT_SSL_VERIFYPEER, 0);
+        //POST 
+        curl_setopt($chOne, CURLOPT_POST, 1);
+        curl_setopt($chOne, CURLOPT_POSTFIELDS, "message=$mms");
+        curl_setopt($chOne, CURLOPT_FOLLOWLOCATION, 1);
+        $headers = array('Content-type: application/x-www-form-urlencoded', 'Authorization: Bearer ' . $lineapi . '',);
+        curl_setopt($chOne, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($chOne, CURLOPT_RETURNTRANSFER, 1);
+        $result = curl_exec($chOne);
+        //Check error 
+//        if (curl_error($chOne)) {
+//            echo 'error:' . curl_error($chOne);
+//        } else {
+//            $result_ = json_decode($result, true);
+//            echo "status : " . $result_['status'];
+//            echo "message : " . $result_['message'];
+//        }
+
+        curl_close($chOne);
+        $this->response($postData, 200);
+    }
+
     public function get_all_department_get() {
         header('Content-Type: application/json');
         $result = $this->Parts_Model->Get_all_department();
@@ -69,8 +121,8 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
 
         $this->response($result, 200);
     }
-    
-        public function search_paytran_post() {
+
+    public function search_paytran_post() {
         header('Content-Type: application/json');
 
         $NO_REC = $this->post("NO_REC");
@@ -94,10 +146,10 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
         $BILLNO = $this->post("BILLNO");
         $DETAIL = $this->post("DETAIL");
         $MT_CODE = $this->post("MT_CODE");
-        $result = $this->Parts_Model->Insert_rcvtran($NO_REC, $BILLNO,$MT_CODE,$DETAIL);
-        
+        $result = $this->Parts_Model->Insert_rcvtran($NO_REC, $BILLNO, $MT_CODE, $DETAIL);
+
 //        $result = $BILLNO[0]."||".$DETAIL[0];
-        
+
         $this->response($result, 200);
     }
 
@@ -125,6 +177,14 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
         $this->response($result, 200);
     }
 
+    public function rcvdetail_list_get() {
+        header('Content-Type: application/json');
+
+        $result = $this->Parts_Model->rcvdetail_list();
+
+        $this->response($result, 200);
+    }
+
     public function rcvtran_cancel_post() {
         header('Content-Type: application/json');
         $BILLNO = $this->input->post("BILLNO");
@@ -134,8 +194,25 @@ class Parts_Controller extends \Restserver\Libraries\REST_Controller {
         $this->response($result, 200);
     }
 
-    public function test_helper_get(){
+    public function rcv_cancel_post() {
+        header('Content-Type: application/json');
+        $BILLNO = $this->input->post("BILLNO");
+        $NO_REC = $this->input->post("NO_REC");
+
+        $result = $this->Parts_Model->rcv_cancel($NO_REC, $BILLNO, $RCV_NO, $MT_CODE, $detail_qty);
+
+        $this->response($result, 200);
+    }
+
+    public function stock_list_get() {
+        header('Content-Type: application/json');
+        $result = $this->Parts_Model->stock_list();
+
+        $this->response($result, 200);
+    }
+
+    public function test_helper_get() {
         echo xx("abc");
     }
-    
+
 }

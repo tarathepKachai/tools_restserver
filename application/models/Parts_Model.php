@@ -907,7 +907,6 @@ class Parts_Model extends CI_Model {
         $month = date('m');
         $period = $year . $month;
 
-
         $where_sumrcv = array(
             "RCVD_BILLNO" => $BILLNO
         );
@@ -988,8 +987,6 @@ class Parts_Model extends CI_Model {
                     $a = $this->db->insert("rcvdetail");
                 }
 
-
-
                 $where_amount = array(
                     "RCV_BILLNO" => $BILLNO,
                     "RCV_REF_NO" => $NO_REC,
@@ -1022,6 +1019,12 @@ class Parts_Model extends CI_Model {
                     $this->db->where($where_pay);
                     $this->db->update("paydetail");
                 }
+
+                $array_stock['MT_CODE'] = $paydetail['PayD_MT_CODE'];
+                $array_stock['detail_Qty'] = $detail_qty;
+                $array_stock['PRICE'] = $paydetail['PayD_PRICE'];
+
+                $this->insert_stock($array_stock);
             }
 
             //return $sql2;
@@ -1190,6 +1193,14 @@ class Parts_Model extends CI_Model {
         return $array;
     }
 
+    public function rcv_cancel($NO_REC, $BILLNO, $RCVD_NO, $MT_CODE, $detail_qty) {
+        
+        $where_cancel = array(
+          "RCVD_NO" => $RCVD_NO
+        );
+        
+    }
+
     public function rcvtran_list() {
         $where = array(
             "Date_Cancel" => NULL
@@ -1237,6 +1248,31 @@ class Parts_Model extends CI_Model {
         return $result;
     }
 
+    public function rcvdetail_list() {
+        $where = array(
+            "Date_Cancel" => NULL
+        );
+        $this->db->select("rd.RCVD_BILLNO as BILLNO, rd.RCVD_NO as RCVD_NO,"
+                . "rd.RCVD_DATE as RCVD_DATE, rd.RCVD_Qty as Qty,"
+                . "m.mt_name as MT_NAME, m.mt_unit as MT_UNIT,g.descript as group,m.mt_grp as grp"
+        );
+        $this->db->from("rcvdetail rd");
+        $this->db->join("master m", "rd.RCVD_MT_CODE=m.mt_code", "left");
+        $this->db->join("grup g","m.mt_grp=g.code_gp","left");
+        $query = $this->db->get();
+
+        if ($query->num_rows() > 0) {
+            $result = $query->result_array();
+        } else {
+            $result = array(
+                "status" => false,
+                "msg" => "no data"
+            );
+        }
+
+        return $result;
+    }
+
     public function rcvtran_by_id($BILLNO) {
 
         $where = array(
@@ -1262,7 +1298,7 @@ class Parts_Model extends CI_Model {
 
     public function insert_stock($array) {
 
-        $year = date('Y');
+        $year = date('Y')+543;
         $month = date('m');
         $period = $year . $month;
         $where = array(
@@ -1275,18 +1311,79 @@ class Parts_Model extends CI_Model {
 
         if ($query->num_rows() > 0) {
             $stock_up = "";
+
+
             foreach ($query->result_array() as $stock) {
-                $stock_up = $stock['ST_NOW']+$array['ST_Qty'];
-                
+
+                if ($stock['PERIOD'] == $period) {
+
+                    $stock_up['ST_NOW'] = $stock['ST_NOW'] + $array['detail_Qty'];
+                    $stock_up['ST_RCV'] = $stock['ST_RCV'] + $array['detail_Qty'];
+                    $stock_up['ST_MRCV'] = $stock['ST_MRCV'] + ( $array['PRICE'] * $array['detail_Qty']);
+
+                    $this->db->set($stock_up);
+                    $this->db->where(array("ST_MT_CODE" => $array['MT_CODE'], "PERIOD" => $period));
+                    $this->db->update("stock");
+                } else {
+                    $this->db->select("MAX(PERIOD) as  max_p ");
+                    $this->db->from("stock");
+                    $this->db->where("ST_MT_CODE", $array['MT_CODE']);
+
+                    $query_stock = $this->db->get();
+                    if ($query_stock->num_rows > 0) {
+                        foreach ($query_stock->result_array() as $last_stock) {
+                            $max_p = $last_stock['max_p'];
+                        }
+
+                        $this->db->where(array("ST_MT_CODE" => $array['MT_CODE'], "PERIOD" => $max_p));
+                        $query_last_st = $this->db->get("stock");
+                        foreach ($query_last_st->result_array() as $last_st) {
+                            $last_BOM = $last_st['ST_NOW'];
+                            $last_price = $last_st['ST_PRICE'];
+                        }
+
+                        $arr_new_st = array(
+                            "ST_MT_CODE" => $array['MT_CODE'],
+                            "ST_DATE" => date("Y-m-d"),
+                            "ST_BOM" => $last_BOM,
+                            "ST_NOW" => $last_BOM + $array['detail_Qty'],
+                            "ST_RCV" => $last_BOM + $array['detail_Qty'],
+                            "ST_MRCV" => $array['PRICE'] * ($array['detail_Qty'] + $last_BOM),
+                            "ST_RCVEXP" => "",
+                            "ST_MRCVEXP" => "",
+                            "ST_INP" => "",
+                            "ST_RET" => "",
+                            "ST_PAY" => "",
+                            "ST_OUT" => "",
+                            "ST_BCK" => "",
+                            "ST_MBCK" => "",
+                            "ST_UPD" => "",
+                            "CODE_ST" => "",
+                            "PERIOD" => $period,
+                            "ST_ID" => "",
+                            "ST_PRICE" => $last_price,
+                            "ST_TRF" => "",
+                            "ST_MTRF" => ""
+                        );
+
+                        $this->db->set($arr_new_st);
+                        $this->db->insert("stock");
+                        
+                        
+                        
+                        
+                    }
+                }
             }
         } else {
+
             $array_stock = array(
                 "ST_MT_CODE" => $array['MT_CODE'],
-                "ST_DATE" =>date("Y-m-d"),
+                "ST_DATE" => date("Y-m-d"),
                 "ST_BOM" => "",
-                "ST_NOW" => "0",
-                "ST_RCV" => $array['ST_Qty'],
-                "ST_MRCV" => $array['PRICE']*$array['ST_Qty'],
+                "ST_NOW" => $array['detail_Qty'],
+                "ST_RCV" => $array['detail_Qty'],
+                "ST_MRCV" => $array['PRICE'] * $array['detail_Qty'],
                 "ST_RCVEXP" => "",
                 "ST_MRCVEXP" => "",
                 "ST_INP" => "",
@@ -1307,6 +1404,28 @@ class Parts_Model extends CI_Model {
             $this->db->set($array_stock);
             $this->db->insert("stock");
         }
+
+        return 1;
+    }
+
+    public function stock_list() {
+        $year = date("Y") + 543;
+        $month = date("m");
+        $period = $year.$month;
+        $where = array(
+            "PERIOD" => $period
+        );
+        
+        $this->db->select("s.ST_MT_CODE as MT_CODE, s.ST_NOW as ST_NOW,"
+                . "m.mt_name as MT_NAME, m.mt_unit as MT_UNIT,g.descript as group,m.mt_grp as grp"
+                );
+        $this->db->from("stock s");
+        $this->db->join("master m","s.ST_MT_CODE=m.mt_code","left");
+        $this->db->join("grup g","m.mt_grp=g.code_gp","left");
+        $this->db->where($where);    
+        $query = $this->db->get();
+        return $query->result_array();
+        
     }
 
     //=============== convert utf-8 to tis-620 ================= 

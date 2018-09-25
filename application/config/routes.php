@@ -69,6 +69,7 @@ $route['parts/paytran_list'] = 'api/Parts_Controller/paytran_list';
 $route['parts/paydetail_by_id'] = 'api/Parts_Controller/paydetail_by_id';
 $route['parts/paytran_by_id'] = 'api/Parts_Controller/paytran_by_id';
 $route['parts/search_paytran'] = 'api/Parts_Controller/search_paytran';
+$route['parts/rcvdetail_list'] = 'api/Parts_Controller/rcvdetail_list';
 
 
 $route['user/auth'] = 'api/User_Controller/Login_check';
@@ -79,4 +80,8 @@ $route['parts/Insert_rcvtran'] = 'api/Parts_Controller/insert_rcvtran';
 $route['parts/rcvtran_list'] = 'api/Parts_Controller/rcvtran_list';
 $route['parts/rcvdetail_by_id'] = 'api/Parts_Controller/rcvdetail_by_id';
 $route['parts/rcvtran_cancel'] = 'api/Parts_Controller/rcvtran_cancel';
+$route['parts/stock_list'] = 'api/Parts_Controller/stock_list';
+
+$route['parts/test_line'] = 'api/Parts_Controller/test_line';
+$route['parts/line_notify'] = 'api/Parts_Controller/line_notify';
 
